@@ -207,7 +207,7 @@
             resultContainer.innerHTML = '<div class="spinner"></div>';
 
             try {
-                const response = await fetch(`http://127.0.0.1:5000/search?query=${encodeURIComponent(query)}`);
+                const response = await fetch(`/search?query=${encodeURIComponent(query)}`);
                 const data = await response.json();
 
                 if (data.summary) {
@@ -226,7 +226,7 @@
         });
 
         function initializeChat() {
-            const socket = io("http://127.0.0.1:5000");
+            const socket = io();
             const messages = document.getElementById('messages');
             const chatForm = document.getElementById('chatForm');
             const messageInput = document.getElementById('messageInput');
