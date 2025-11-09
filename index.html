@@ -135,6 +135,10 @@
             background: white;
             border-radius: 5px;
         }
+        #messages li.user-0 { border-left: 5px solid #007bff; }
+        #messages li.user-1 { border-left: 5px solid #28a745; }
+        #messages li.other { border-left: 5px solid #6c757d; }
+
         #chatForm {
             display: flex;
             gap: 10px;
@@ -214,6 +218,7 @@
             const messages = document.getElementById('messages');
             const chatForm = document.getElementById('chatForm');
             const messageInput = document.getElementById('messageInput');
+            const userColors = {};
             
             chatForm.addEventListener('submit', function(e) {
                 e.preventDefault();
@@ -223,15 +228,24 @@
                 }
             });
 
-            const addMessage = (msg) => {
+            const addMessage = (msgData) => {
+                const sid = msgData.sid;
+                const msg = msgData.message;
+
+                if (!(sid in userColors)) {
+                    const userIndex = Object.keys(userColors).length;
+                    userColors[sid] = `user-${userIndex}`;
+                }
+
                 const item = document.createElement('li');
+                item.classList.add(userColors[sid] || 'other');
                 item.textContent = msg;
                 messages.appendChild(item);
                 messages.scrollTop = messages.scrollHeight;
             };
 
-            socket.on('new_message', (data) => addMessage(data.message));
-            socket.on('history', (data) => data.messages.forEach(msg => addMessage(msg.trim())));
+            socket.on('new_message', (data) => addMessage(data));
+            socket.on('history', (data) => data.messages.forEach(msgData => addMessage(msgData)));
             socket.on('chat_full', (data) => alert(data.message));
         }
     </script>
