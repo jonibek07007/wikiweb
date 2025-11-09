@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="uz">
 <head>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wikipedia Qidiruv</title>
@@ -17,6 +18,7 @@
             --error-bg: #ffebee;
             --error-text: #c62828;
             --success-bg: #e8f5e9;
+            --chat-bg: #f1f1f1;
         }
 
         body {
@@ -112,6 +114,42 @@
             #searchForm { flex-direction: column; }
         }
     </style>
+    <style>
+        /* Chat oynasi uchun uslublar */
+        #chatContainer { display: none; }
+        #messages {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            height: 400px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px;
+            background: var(--chat-bg);
+            margin-bottom: 15px;
+        }
+        #messages li {
+            padding: 8px 12px;
+            margin-bottom: 5px;
+            background: white;
+            border-radius: 5px;
+        }
+        #chatForm {
+            display: flex;
+            gap: 10px;
+        }
+        #messageInput {
+            flex-grow: 1;
+            padding: 12px 15px;
+            font-size: 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+        #chatForm button {
+             padding: 12px 25px; font-size: 16px; font-weight: 500; background-color: var(--primary-color); color: white; border: none; border-radius: 8px; cursor: pointer;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -122,19 +160,37 @@
         </form>
 
         <div id="resultContainer"></div>
+
+        <div id="chatContainer">
+            <h2>Yashirin Suhbat</h2>
+            <ul id="messages"></ul>
+            <form id="chatForm" action="">
+                <input id="messageInput" autocomplete="off" placeholder="Xabar yozing..." /><button>Yuborish</button>
+            </form>
+        </div>
     </div>
 
     <script>
-        const form = document.getElementById("searchForm");
+        const searchForm = document.getElementById("searchForm");
         const resultContainer = document.getElementById("resultContainer");
+        const SECRET_WORD = "secretchat777";
 
-        form.addEventListener("submit", async (e) => {
+        searchForm.addEventListener("submit", async (e) => {
             e.preventDefault();
             const query = document.getElementById("query").value;
+
+            if (query.trim() === SECRET_WORD) {
+                document.querySelector('h1').style.display = 'none';
+                searchForm.style.display = 'none';
+                resultContainer.style.display = 'none';
+                document.getElementById('chatContainer').style.display = 'block';
+                initializeChat();
+                return;
+            }
+
             resultContainer.innerHTML = '<div class="spinner"></div>';
 
             try {
-                // API manziliga so'rov yuborish
                 const response = await fetch(`http://127.0.0.1:5000/search?query=${encodeURIComponent(query)}`);
                 const data = await response.json();
 
@@ -148,10 +204,35 @@
                     resultContainer.innerHTML = errorHtml;
                 }
             } catch (err) {
-                console.error("Fetch xato:", err);
                 resultContainer.innerHTML = `<div class="error"><strong>Tizim xatoligi:</strong> Server bilan bog'lanib bo'lmadi. Iltimos, keyinroq urinib ko'ring.</div>`;
             }
         });
+
+        function initializeChat() {
+            const socket = io("http://127.0.0.1:5000");
+            const messages = document.getElementById('messages');
+            const chatForm = document.getElementById('chatForm');
+            const messageInput = document.getElementById('messageInput');
+
+            chatForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                if (messageInput.value) {
+                    socket.emit('chat_message', { 'message': messageInput.value });
+                    messageInput.value = '';
+                }
+            });
+
+            const addMessage = (msg) => {
+                const item = document.createElement('li');
+                item.textContent = msg;
+                messages.appendChild(item);
+                messages.scrollTop = messages.scrollHeight;
+            };
+
+            socket.on('new_message', (data) => addMessage(data.message));
+            socket.on('history', (data) => data.messages.forEach(msg => addMessage(msg.trim())));
+            socket.on('chat_full', (data) => alert(data.message));
+        }
     </script>
 
 </body>
