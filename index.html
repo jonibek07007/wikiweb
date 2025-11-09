@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wikipedia Qidiruv</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --background-color: #f4f7f9;
+            --container-bg: #ffffff;
+            --text-color: #333;
+            --border-color: #e0e0e0;
+            --error-bg: #ffebee;
+            --error-text: #c62828;
+            --success-bg: #e8f5e9;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .container {
+            background-color: var(--container-bg);
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+            width: 100%;
+            max-width: 700px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 30px;
+        }
+
+        #searchForm {
+            display: flex;
+            gap: 10px;
+        }
+
+        #query {
+            flex-grow: 1;
+            padding: 12px 15px;
+            font-size: 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        #query:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15);
+        }
+
+        input[type=submit] {
+            padding: 12px 25px;
+            font-size: 16px;
+            font-weight: 500;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        input[type=submit]:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        #resultContainer {
+            margin-top: 30px;
+            line-height: 1.7;
+        }
+
+        .result { padding: 20px; border-radius: 8px; background: var(--success-bg); border-left: 5px solid #4CAF50; }
+        .error { padding: 20px; border-radius: 8px; background: var(--error-bg); color: var(--error-text); border-left: 5px solid var(--error-text); }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(0,0,0,0.1);
+            border-left-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            .container { padding: 20px; }
+            #searchForm { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Wikipedia Qidiruv</h1>
+        <form id="searchForm">
+            <input type="text" id="query" placeholder="Mavzu nomini kiriting..." required>
+            <input type="submit" value="Qidirish">
+        </form>
+
+        <div id="resultContainer"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById("searchForm");
+        const resultContainer = document.getElementById("resultContainer");
+
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const query = document.getElementById("query").value;
+            resultContainer.innerHTML = '<div class="spinner"></div>';
+
+            try {
+                // API manziliga so'rov yuborish
+                const response = await fetch(`http://127.0.0.1:5000/search?query=${encodeURIComponent(query)}`);
+                const data = await response.json();
+
+                if (data.summary) {
+                    resultContainer.innerHTML = `<div class="result"><p>${data.summary}</p></div>`;
+                } else if (data.error) {
+                    let errorHtml = `<div class="error"><strong>Xatolik:</strong> ${data.error}</div>`;
+                    if (data.options) {
+                        errorHtml += `<div class="error" style="margin-top: 10px;"><strong>Variantlar:</strong> ${data.options.join(", ")}</div>`;
+                    }
+                    resultContainer.innerHTML = errorHtml;
+                }
+            } catch (err) {
+                console.error("Fetch xato:", err);
+                resultContainer.innerHTML = `<div class="error"><strong>Tizim xatoligi:</strong> Server bilan bog'lanib bo'lmadi. Iltimos, keyinroq urinib ko'ring.</div>`;
+            }
+        });
+    </script>
+
+</body>
+</html>
