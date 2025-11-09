@@ -186,7 +186,7 @@
                 document.getElementById('chatContainer').style.display = 'block';
                 initializeChat();
                 return;
-            }
+            } else {
 
             resultContainer.innerHTML = '<div class="spinner"></div>';
 
@@ -206,6 +206,7 @@
             } catch (err) {
                 resultContainer.innerHTML = `<div class="error"><strong>Tizim xatoligi:</strong> Server bilan bog'lanib bo'lmadi. Iltimos, keyinroq urinib ko'ring.</div>`;
             }
+            }
         });
 
         function initializeChat() {
@@ -213,7 +214,7 @@
             const messages = document.getElementById('messages');
             const chatForm = document.getElementById('chatForm');
             const messageInput = document.getElementById('messageInput');
-
+            
             chatForm.addEventListener('submit', function(e) {
                 e.preventDefault();
                 if (messageInput.value) {
