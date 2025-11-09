@@ -138,6 +138,12 @@
         #messages li.user-0 { border-left: 5px solid #007bff; }
         #messages li.user-1 { border-left: 5px solid #28a745; }
         #messages li.other { border-left: 5px solid #6c757d; }
+        #messages .timestamp {
+            font-size: 0.8em;
+            color: #888;
+            margin-left: 10px;
+            float: right;
+        }
 
         #chatForm {
             display: flex;
@@ -231,6 +237,7 @@
             const addMessage = (msgData) => {
                 const sid = msgData.sid;
                 const msg = msgData.message;
+                const timestamp = msgData.timestamp;
 
                 if (!(sid in userColors)) {
                     const userIndex = Object.keys(userColors).length;
@@ -239,7 +246,14 @@
 
                 const item = document.createElement('li');
                 item.classList.add(userColors[sid] || 'other');
-                item.textContent = msg;
+                
+                const msgText = document.createTextNode(msg);
+                const timeSpan = document.createElement('span');
+                timeSpan.className = 'timestamp';
+                timeSpan.textContent = timestamp;
+
+                item.appendChild(msgText);
+                item.appendChild(timeSpan);
                 messages.appendChild(item);
                 messages.scrollTop = messages.scrollHeight;
             };
