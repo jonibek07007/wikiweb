@@ -135,14 +135,20 @@
             background: white;
             border-radius: 5px;
         }
+        #messages li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap; /* Mobil qurilmalar uchun */
+        }
         #messages li.user-0 { border-left: 5px solid #007bff; }
         #messages li.user-1 { border-left: 5px solid #28a745; }
         #messages li.other { border-left: 5px solid #6c757d; }
         #messages .timestamp {
             font-size: 0.8em;
             color: #888;
-            margin-left: 10px;
-            float: right;
+            margin-left: 15px; /* Matndan ajratish */
+            white-space: nowrap; /* Vaqtni bir qatorda saqlash */
         }
 
         #chatForm {
@@ -247,12 +253,15 @@
                 const item = document.createElement('li');
                 item.classList.add(userColors[sid] || 'other');
                 
-                const msgText = document.createTextNode(msg);
+                const msgSpan = document.createElement('span');
+                msgSpan.textContent = msg;
+
                 const timeSpan = document.createElement('span');
                 timeSpan.className = 'timestamp';
                 timeSpan.textContent = timestamp;
 
-                item.appendChild(msgText);
+                // Xabar matni va vaqtini 'li' elementiga qo'shish
+                item.appendChild(msgSpan);
                 item.appendChild(timeSpan);
                 messages.appendChild(item);
                 messages.scrollTop = messages.scrollHeight;
